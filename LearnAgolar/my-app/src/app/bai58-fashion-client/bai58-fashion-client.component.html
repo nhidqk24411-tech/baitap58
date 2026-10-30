@@ -1,0 +1,351 @@
+<div class="client-magazine-layout">
+  <!-- Top Global Bar -->
+  <div class="top-announcement-bar">
+    <div class="announcement-container">
+      <div class="bar-left">
+        <span>PARIS &bull; MILAN &bull; LONDON &bull; NEW YORK &bull; TOKYO</span>
+      </div>
+      <div class="bar-right">
+        <a [routerLink]="['/bai58-fashion-admin']" class="admin-link-badge" title="Chuyển đến trang quản trị Admin WYSIWYG">
+          <i class="bi bi-shield-lock-fill me-1"></i> TRANG QUẢN TRỊ ADMIN (WYSIWYG)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editorial Masthead (Vogue Style) -->
+  <header class="editorial-masthead">
+    <div class="masthead-container">
+      <div class="masthead-logo-link" (click)="goBackToGallery()" style="cursor: pointer;">
+        <span class="masthead-logo-text">FASHION EDITORIAL</span>
+        <span class="masthead-sub-logo">STREET STYLE &bull; RUNWAY &bull; TRENDS</span>
+      </div>
+    </div>
+
+    <!-- Magazine Category Bar (Ảnh 1: Thanh công cụ danh mục) -->
+    <nav class="magazine-nav-bar">
+      <div class="nav-bar-container">
+        @for (cat of categories; track cat.id) {
+          <button
+            type="button"
+            class="cat-link"
+            [class.active]="api.selectedCategory() === cat.id"
+            (click)="onSelectCategory(cat.id)"
+          >
+            {{ cat.label }}
+          </button>
+        }
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main View -->
+  <main class="client-main-view">
+    <!-- 1. DETAIL VIEW: WHEN AN ARTICLE IS SELECTED -->
+    @if (selectedDetailFashion(); as fashion) {
+      <div class="fashion-detail-page animate-fade-in">
+        <!-- Top Back Bar (Ảnh 2: Thanh quay lại nằm hẳn bên trên, không che đè ảnh) -->
+        <div class="detail-top-nav">
+          <div class="nav-content">
+            <button type="button" class="btn-back-gallery" (click)="goBackToGallery()">
+              <i class="bi bi-arrow-left me-2"></i> QUAY LẠI TRANG BỘ SƯU TẬP
+            </button>
+            <span class="detail-breadcrumb-style">{{ fashion.style }}</span>
+          </div>
+        </div>
+
+        <article class="editorial-article-container">
+          <!-- Article Header -->
+          <header class="article-header">
+            <div class="category-pill-wrapper">
+              <span class="category-badge">{{ fashion.style }}</span>
+              <span class="category-idf-badge"><i class="bi bi-hash"></i> Cột IdF: #{{ fashion.IdF }}</span>
+              <span class="category-slug-badge" title="Slug chuẩn SEO"><i class="bi bi-link-45deg"></i> /{{ fashion.slug }}</span>
+              <span class="reading-time"><i class="bi bi-clock me-1"></i> 3 phút đọc</span>
+            </div>
+
+            <h1 class="article-headline">{{ fashion.getTitle() }}</h1>
+
+            <div class="article-meta-row">
+              <div class="author-info">
+                <span class="author-name">Bởi <strong>Vogue Style Archive</strong></span>
+                <span class="meta-dot">&bull;</span>
+                <span class="publish-date">{{ (fashion.created_at || '2023-09-25') | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="action-buttons">
+                <button type="button" class="btn-share" (click)="goBackToGallery()" title="Quay lại">
+                  <i class="bi bi-grid-fill me-1"></i> Xem danh sách
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <!-- Hero Image Section -->
+          <div class="article-hero-figure">
+            <div class="hero-image-wrapper">
+              <img
+                [src]="fashion.getBase64String()"
+                [alt]="fashion.getTitle()"
+                class="hero-editorial-img"
+              />
+            </div>
+            <figcaption class="hero-caption">
+              <i class="bi bi-camera me-1"></i>
+              Street style highlights captured live on the streets during fashion week. Photographed by Phil Oh.
+            </figcaption>
+          </div>
+
+          <!-- Article WYSIWYG Content Body -->
+          <div class="article-body-content">
+            <div class="wysiwyg-rendered-html" [innerHTML]="fashion.getDetail() | safeHtml"></div>
+          </div>
+
+          <!-- Article Footer & Tags -->
+          <footer class="article-footer-section">
+            <div class="tags-container">
+              <span class="tags-label">Tags:</span>
+              <span class="tag-pill">#{{ (fashion.style || 'FASHION').replace(' ', '') }}</span>
+              <span class="tag-pill">#StreetStyle</span>
+              <span class="tag-pill">#FashionWeek2023</span>
+              <span class="tag-pill">#VogueArchive</span>
+            </div>
+
+            <div class="footer-back-action">
+              <button type="button" class="btn-return-gallery" (click)="goBackToGallery()">
+                <i class="bi bi-arrow-left me-2"></i> Trở về danh sách bộ sưu tập
+              </button>
+            </div>
+          </footer>
+
+          <!-- Related Stories Section -->
+          @if (relatedFashions().length > 0) {
+            <section class="related-stories-section">
+              <div class="section-divider">
+                <span class="divider-title">BÀI VIẾT CÙNG PHONG CÁCH {{ fashion.style }}</span>
+              </div>
+
+              <div class="related-grid">
+                @for (item of relatedFashions(); track item._id) {
+                  <div class="related-card" (click)="viewDetail(item)">
+                    <div class="related-thumb-wrapper">
+                      <img [src]="item.getBase64String()" [alt]="item.getTitle()" class="related-img" />
+                      <div class="related-camera-badge"><i class="bi bi-camera-fill"></i></div>
+                    </div>
+                    <div class="related-content">
+                      <span class="related-style-tag">{{ item.style }}</span>
+                      <h4 class="related-title">{{ item.getTitle() }}</h4>
+                    </div>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+        </article>
+      </div>
+    }
+
+    <!-- 2. GALLERY VIEW: CATEGORY FILTER, SEARCH & 4-COLUMN CARDS -->
+    @else {
+      <div class="client-fashion-page animate-fade-in">
+        <!-- Search & Filter Section -->
+        <section class="search-section-vogue">
+          <div class="search-container-vogue">
+            <!-- Search Form: TRY 'STREET STYLE' + SEARCH BUTTON -->
+            <form class="search-bar-row" (submit)="$event.preventDefault(); onSearch()">
+              <div class="search-input-wrapper">
+                <i class="bi bi-search search-icon"></i>
+                <input
+                  type="text"
+                  class="vogue-search-input"
+                  placeholder="TRY 'STREET STYLE'"
+                  [(ngModel)]="searchStyleText"
+                  name="searchStyle"
+                />
+                @if (searchStyleText) {
+                  <button type="button" class="btn-clear" (click)="resetSearch()">
+                    <i class="bi bi-x"></i>
+                  </button>
+                }
+              </div>
+              <button type="button" class="btn-vogue-search" (click)="onSearch()">
+                SEARCH
+              </button>
+            </form>
+
+            <!-- Dropdown Filter theo Style (Chọn từ dropdownlist) -->
+            <div class="dropdown-filter-row">
+              <div class="dropdown-group">
+                <span class="dropdown-label">
+                  <i class="bi bi-funnel me-1"></i> Chọn Style từ dropdownlist:
+                </span>
+                <select
+                  class="vogue-dropdown-select"
+                  [ngModel]="selectedDropdownStyle"
+                  (ngModelChange)="onDropdownChange($event)"
+                >
+                  <option value="ALL">-- Tất cả các Style (All Styles) --</option>
+                  @for (st of availableStyles(); track st) {
+                    <option [value]="st">{{ st }}</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Quick Style Chips -->
+              <div class="quick-chips-group">
+                <button
+                  type="button"
+                  class="chip-pill"
+                  [class.active]="selectedDropdownStyle === 'ALL' && !searchStyleText"
+                  (click)="resetSearch()"
+                >
+                  ALL
+                </button>
+                @for (st of availableStyles(); track st) {
+                  <button
+                    type="button"
+                    class="chip-pill"
+                    [class.active]="selectedDropdownStyle === st"
+                    (click)="selectQuickStyle(st)"
+                  >
+                    {{ st }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Loading & Error States -->
+        @if (isLoading()) {
+          <div class="loading-state-box">
+            <div class="vogue-spinner"></div>
+            <p class="loading-text">Đang tải bộ sưu tập thời trang...</p>
+          </div>
+        }
+
+        @if (errMessage()) {
+          <div class="error-banner">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span>{{ errMessage() }}</span>
+            <button type="button" class="btn-retry" (click)="loadData()">Thử lại</button>
+          </div>
+        }
+
+        <!-- Fashion Groups Display (Bố cục Style theo 4 cột) -->
+        @if (!isLoading() && !errMessage()) {
+          @if (styleGroups().length === 0) {
+            <div class="empty-state-box">
+              <i class="bi bi-search empty-icon"></i>
+              <h3>Không tìm thấy bộ sưu tập nào</h3>
+              <p>Không có bài viết nào khớp với phong cách "{{ searchStyleText || selectedDropdownStyle }}".</p>
+              <button type="button" class="btn-reset-filter" (click)="resetSearch()">Xem tất cả</button>
+            </div>
+          }
+
+          @for (group of styleGroups(); track group.styleName) {
+            <section class="style-group-section">
+              <!-- Section Title Header -->
+              <div class="style-header-bar">
+                <div class="style-title-wrap">
+                  <h2 class="style-main-title">{{ group.styleName }}</h2>
+                  <span class="style-count-badge">{{ group.items.length }} STORIES</span>
+                </div>
+                <div class="style-line-decorator"></div>
+              </div>
+
+              <!-- 4-Column Photo Grid (Lưới 4 ảnh như hình minh họa) -->
+              <div class="vogue-grid-4">
+                @for (fashion of group.items; track fashion._id) {
+                  <article class="fashion-card-vogue" (click)="viewDetail(fashion)">
+                    <!-- Image Box with Camera Icon Badge -->
+                    <div class="card-image-container">
+                      <img
+                        [src]="fashion.getBase64String()"
+                        [alt]="fashion.getTitle()"
+                        class="card-img-editorial"
+                        loading="lazy"
+                      />
+
+                      <!-- Camera Icon Overlay -->
+                      <div class="camera-icon-badge" title="Bộ sưu tập ảnh">
+                        <i class="bi bi-camera-fill"></i>
+                      </div>
+
+                      <!-- Hover Overlay -->
+                      <div class="card-hover-overlay">
+                        <span class="read-more-text">
+                          ĐỌC BÀI VIẾT <i class="bi bi-arrow-right ms-1"></i>
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Card Content -->
+                    <div class="card-content-area">
+                      <div class="card-meta-top">
+                        <span class="card-idf-tag" title="Cột IdF số nguyên duy nhất">#{{ fashion.IdF }}</span>
+                        <span class="card-style-tag">{{ fashion.style }}</span>
+                        <span class="card-date">{{ (fashion.created_at || '2023-09-25') | date:'dd/MM/yyyy' }}</span>
+                      </div>
+
+                      <h3 class="card-subject-title">
+                        {{ fashion.getTitle() }}
+                      </h3>
+
+                      <div class="card-slug-meta" title="Đường dẫn tĩnh Slug SEO">
+                        <i class="bi bi-link-45deg me-1"></i>
+                        <code>/{{ fashion.slug }}</code>
+                      </div>
+
+                      <p class="card-detail-snippet">
+                        {{ cleanSnippet(fashion.getDetail()) }}
+                      </p>
+                    </div>
+                  </article>
+                }
+              </div>
+            </section>
+          }
+        }
+      </div>
+    }
+  </main>
+
+  <!-- Editorial Magazine Footer -->
+  <footer class="editorial-footer">
+    <div class="footer-container">
+      <div class="footer-brand-col">
+        <span class="footer-logo">FASHION EDITORIAL</span>
+        <p class="footer-about">
+          Nền tảng trình diễn và lưu trữ các bài phóng sự ảnh thời trang đỉnh cao từ các kinh đô thời trang thế giới. Tích hợp công nghệ hiện đại Angular và MongoDB.
+        </p>
+      </div>
+
+      <div class="footer-links-col">
+        <h6>DANH MỤC THỜI TRANG</h6>
+        <ul>
+          <li><a (click)="onSelectCategory('STREET STYLE')">Street Style Paris & Milan</a></li>
+          <li><a (click)="onSelectCategory('TRENDS')">Báo Cáo Xu Hướng (Trends Report)</a></li>
+          <li><a (click)="onSelectCategory('CELEBRITY STYLE')">Thời Trang Người Nổi Tiếng (Celebrity)</a></li>
+          <li><a (click)="onSelectCategory('FASHION WEEK')">Tuần Lễ Thời Trang Luân Đôn</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-tech-col">
+        <h6>THÔNG TIN HỆ THỐNG</h6>
+        <div class="tech-badge-list">
+          <span class="tech-pill">Module: <strong>Client Vogue</strong></span>
+          <span class="tech-pill">Backend: <strong>Port 4000</strong></span>
+          <span class="tech-pill">Database: <strong>FashionData</strong></span>
+        </div>
+        <p class="small text-muted mt-2">
+          Bài 58 - Bài tập tổng hợp (*) &bull; Tích hợp nội bộ trong ứng dụng LearnAgolar
+        </p>
+      </div>
+    </div>
+
+    <div class="footer-bottom-bar">
+      <span>&copy; {{ currentDate | date:'yyyy' }} Fashion Editorial. Tất cả bản quyền được bảo lưu.</span>
+      <span>Designed with Modern Angular Aesthetics</span>
+    </div>
+  </footer>
+</div>

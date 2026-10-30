@@ -1,0 +1,65 @@
+<p>{{errMessage}}</p>
+<table>
+    <tr>
+        <td>Fashion Style:</td>
+        <td>
+            <input type="text" class="form-control" #name="ngModel"
+            name="style" id="style" placeholder="Input Style"
+            [(ngModel)]="fashion.style"/>
+        </td>
+    </tr>
+    <tr>
+        <td>Fashion Subject:</td>
+        <td>
+            <input type="text" class="form-control" #name="ngModel"
+            name="fashion_subject" id="fashion_subject" placeholder="Input Subject"
+            [(ngModel)]="fashion.fashion_subject"/>
+        </td>
+    </tr>
+    <tr>
+        <td>Fashion Detail:</td>
+        <td>
+            <input type="text" class="form-control" #name="ngModel"
+            name="fashion_detail" id="fashion_detail" placeholder="Input Detail"
+            [(ngModel)]="fashion.fashion_detail"/>
+        </td>
+    </tr>
+    <tr>
+        <td>Fashion Image:</td>
+        <td>
+            <input type="file" class="file-input"
+            #name="ngModel" name="fashion_image" id="fashion_image"
+            [(ngModel)]="fashion.fashion_image"
+            (change)="onFileSelected($event,fashion)"
+            >
+        </td>
+    </tr>
+     <tr>
+        <td colspan="2">
+            <button (click)="postFashion()">Submit</button>
+        </td>
+    </tr>
+</table>
+<table>
+  @if (fashion!=null){
+    <tr>
+        <td>Fashion Id:</td>
+        <td>{{fashion._id}}</td>
+    </tr>
+    <tr>
+        <td>Fashion Subject:</td>
+        <td>{{fashion.fashion_subject}}</td>
+    </tr>
+    <tr>
+        <td>Fashion Detail:</td>
+        <td>{{fashion.fashion_detail}} </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <img src="{{fashion.getBase64String()}}">
+        </td>
+    </tr>
+  }
+</table>
+
+

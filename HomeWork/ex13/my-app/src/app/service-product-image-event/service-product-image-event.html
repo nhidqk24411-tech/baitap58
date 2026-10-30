@@ -1,0 +1,29 @@
+<p>service-product-image-event works!</p>
+
+<table border="1" cellpadding="8" cellspacing="0">
+  <thead>
+    <tr>
+      <th>Mã Sản Phẩm</th>
+      <th>Tên Sản Phẩm</th>
+      <th>Giá Sản Phẩm</th>
+      <th>Picture</th>
+      <th>#</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Sử dụng *ngFor để duyệt danh sách sản phẩm -->
+    <tr *ngFor="let p of products">
+      <td>{{ p.ProductId }}</td>
+      <td>{{ p.ProductName }}</td>
+      <td>{{ p.Price }}</td>
+      <td>
+        <!-- Dùng Property Binding [src] để hiển thị ảnh -->
+        <img [src]="p.Image" width="60" height="60" [alt]="p.ProductName" />
+      </td>
+      <td>
+        <!-- Event Binding bắt sự kiện click gọi hàm viewDetail -->
+        <button (click)="viewDetail(p)">Details</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

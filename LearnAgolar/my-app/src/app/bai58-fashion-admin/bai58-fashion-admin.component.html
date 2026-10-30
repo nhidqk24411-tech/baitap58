@@ -1,0 +1,379 @@
+<div class="admin-fashion-layout">
+  <!-- Top Admin Header -->
+  <header class="admin-top-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <span class="badge-role"><i class="bi bi-shield-lock-fill"></i> QUẢN TRỊ VIÊN</span>
+        <h2 class="portal-title">Fashion Admin Portal &bull; Quản Trị Hệ Thống Thời Trang</h2>
+      </div>
+
+      <div class="quick-nav-actions">
+        <a [routerLink]="['/bai58-fashion-client']" class="btn-portal-secondary" title="Mở trang Client">
+          <i class="bi bi-eye-fill me-1"></i> Xem Website Client
+        </a>
+        @if (currentView === 'list') {
+          <button type="button" class="btn-portal-primary" (click)="openAddForm()">
+            <i class="bi bi-plus-lg me-1"></i> Thêm mới Fashion
+          </button>
+        } @else {
+          <button type="button" class="btn-portal-primary" (click)="cancelForm()">
+            <i class="bi bi-list-ul me-1"></i> Trở về danh sách
+          </button>
+        }
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification -->
+  @if (successMessage()) {
+    <div class="toast-floating-banner">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      <span>{{ successMessage() }}</span>
+    </div>
+  }
+
+  <main class="admin-main-container">
+    <!-- VIEW 1: CREATE / EDIT FORM -->
+    @if (currentView === 'form') {
+      <div class="form-card-container animate-fade-in">
+        <div class="form-header-bar">
+          <div class="header-left">
+            <span class="form-badge">{{ isEditMode ? 'CHỈNH SỬA' : 'TẠO MỚI' }}</span>
+            <h3 class="form-title">{{ isEditMode ? 'Chỉnh Sửa Bài Viết Fashion' : 'Thêm Mới Bài Viết Fashion' }}</h3>
+          </div>
+          <button type="button" class="btn-close-form" (click)="cancelForm()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <form class="fashion-admin-form" (submit)="$event.preventDefault(); saveFashion()">
+          <!-- Thông tin IdF và Slug tự động sinh -->
+          <div class="slug-info-box mb-4">
+            <div class="slug-info-row">
+              <span class="idf-pill"><i class="bi bi-hash"></i> CỘT IdF: <strong>#{{ formData.IdF || 1 }}</strong> (Kiểu số nguyên duy nhất)</span>
+              <span class="slug-preview">
+                <i class="bi bi-link-45deg"></i> Slug SEO: <code>/{{ createSlug(formData.fashion_subject, formData.IdF) }}</code>
+              </span>
+            </div>
+            <div class="slug-formula-hint">
+              <i class="bi bi-lightning-charge-fill me-1 text-warning"></i> Quy tắc sinh Slug: <code>toSlug(tiêu đề không dấu) + "-{{ formData.IdF || 1 }}"</code>
+            </div>
+          </div>
+
+          <!-- 1. Tiêu đề bài viết -->
+          <div class="form-group mb-4">
+            <label class="form-label required">Tiêu đề bài viết thời trang (Subject / Title):</label>
+            <input
+              type="text"
+              class="form-control-custom"
+              [(ngModel)]="formData.fashion_subject"
+              name="subject"
+              placeholder="Ví dụ: Street Style Paris: The Best Looks From the Spring 2024 Shows"
+              required
+            />
+          </div>
+
+          <!-- 2. Phong cách (Style) -->
+          <div class="form-group mb-4">
+            <label class="form-label required">Phong cách thời trang (Style):</label>
+            <div class="preset-styles-row mb-2">
+              @for (st of availablePresetStyles; track st) {
+                <button
+                  type="button"
+                  class="preset-style-btn"
+                  [class.active]="formData.style === st"
+                  (click)="formData.style = st"
+                >
+                  {{ st }}
+                </button>
+              }
+            </div>
+            <input
+              type="text"
+              class="form-control-custom"
+              [(ngModel)]="formData.style"
+              name="style"
+              placeholder="Hoặc tự nhập phong cách thời trang khác..."
+              required
+            />
+          </div>
+
+          <!-- 3. Hình ảnh đại diện (Image URL / File) -->
+          <div class="form-group mb-4">
+            <label class="form-label required">Hình ảnh đại diện (Fashion Image / Thumbnail):</label>
+            <div class="image-input-grid">
+              <div class="image-field-col">
+                <input
+                  type="text"
+                  class="form-control-custom mb-2"
+                  [(ngModel)]="formData.fashion_image"
+                  name="image"
+                  placeholder="Nhập đường dẫn ảnh trực tuyến (https://...)"
+                />
+                <div class="upload-file-wrapper">
+                  <span class="upload-tip"><i class="bi bi-upload me-1"></i> Hoặc tải ảnh từ máy tính (tự động chuyển Base64):</span>
+                  <input type="file" class="form-control-file" accept="image/*" (change)="onImageFileSelected($event)" />
+                </div>
+              </div>
+
+              <!-- Live Image Preview -->
+              <div class="image-preview-col">
+                <div class="thumb-preview-box">
+                  <img
+                    [src]="formData.fashion_image || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=400&q=80'"
+                    alt="Preview"
+                    class="thumb-preview-img"
+                  />
+                  <span class="thumb-preview-label">Xem trước ảnh bìa</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. TRÌNH SOẠN THẢO WYSIWYG HTML EDITOR -->
+          <div class="form-group mb-4">
+            <label class="form-label required">
+              Nội dung bài viết chi tiết (Trình soạn thảo WYSIWYG Editor):
+            </label>
+            <app-wysiwyg-editor
+              [(ngModel)]="formData.fashion_detail"
+              name="detail"
+              [placeholder]="'Soạn thảo nội dung phong phú, chèn bảng, danh sách, ảnh và định dạng văn bản...'"
+            ></app-wysiwyg-editor>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-action-bar">
+            <button type="button" class="btn-form-cancel" (click)="cancelForm()">
+              Hủy bỏ
+            </button>
+            <button type="submit" class="btn-form-submit" [disabled]="isSaving">
+              <i class="bi bi-cloud-arrow-up-fill me-1"></i>
+              {{ isSaving ? 'Đang lưu...' : (isEditMode ? 'Cập Nhật Fashion' : 'Thêm Mới Fashion') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- VIEW 2: FASHION LIST & TABLE -->
+    @else {
+      <div class="list-card-container animate-fade-in">
+        <!-- Filter & Search Bar -->
+        <div class="table-toolbar">
+          <div class="toolbar-left">
+            <div class="search-input-box">
+              <i class="bi bi-search search-icon"></i>
+              <input
+                type="text"
+                class="table-search-input"
+                placeholder="Tìm kiếm theo tiêu đề, phong cách, nội dung..."
+                [(ngModel)]="searchQuery"
+                (input)="onSearchInput()"
+              />
+              @if (searchQuery) {
+                <button type="button" class="btn-clear-search" (click)="clearSearch()">&times;</button>
+              }
+            </div>
+
+            <!-- Style Dropdown Filter -->
+            <div class="style-select-box">
+              <select
+                class="table-style-select"
+                [ngModel]="selectedStyle"
+                (ngModelChange)="onStyleChange($event)"
+              >
+                <option value="ALL">-- Tất cả phong cách --</option>
+                @for (st of styles(); track st) {
+                  <option [value]="st">{{ st }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <span class="count-badge">Tổng số: <strong>{{ filteredFashions().length }}</strong> bài viết</span>
+          </div>
+        </div>
+
+        <!-- Error & Loading States -->
+        @if (isLoading()) {
+          <div class="admin-state-box">
+            <div class="admin-spinner"></div>
+            <p>Đang tải danh sách bài viết thời trang...</p>
+          </div>
+        }
+
+        @if (errMessage()) {
+          <div class="error-alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span>{{ errMessage() }}</span>
+            <button type="button" class="btn-retry-admin" (click)="loadFashions()">Thử lại</button>
+          </div>
+        }
+
+        <!-- Table View -->
+        @if (!isLoading() && !errMessage()) {
+          <div class="table-responsive-wrapper">
+            <table class="fashion-admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 85px; text-align: center;">Cột IdF</th>
+                  <th style="width: 80px;">Hình ảnh</th>
+                  <th>Tiêu đề bài viết (Subject / Title)</th>
+                  <th style="width: 170px;">Phong cách</th>
+                  <th>Tóm tắt nội dung</th>
+                  <th style="width: 180px; text-align: center;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (filteredFashions().length === 0) {
+                  <tr>
+                    <td colspan="6" class="empty-table-cell">
+                      <i class="bi bi-inbox empty-icon"></i>
+                      <p>Không có bài viết nào phù hợp.</p>
+                    </td>
+                  </tr>
+                }
+
+                @for (item of filteredFashions(); track item._id || item.IdF) {
+                  <tr>
+                    <!-- Cột IdF kiểu số không trùng nhau -->
+                    <td style="text-align: center;">
+                      <span class="badge-idf-cell" title="Cột IdF số nguyên duy nhất">#{{ item.IdF }}</span>
+                    </td>
+
+                    <!-- Thumbnail -->
+                    <td class="cell-thumb">
+                      <img
+                        [src]="item.getBase64String()"
+                        [alt]="item.getTitle()"
+                        class="table-thumb-img"
+                      />
+                    </td>
+
+                    <!-- Subject / Title & Slug -->
+                    <td class="cell-title">
+                      <span class="item-title-text">{{ item.getTitle() }}</span>
+                      <div class="item-slug-box" title="Đường dẫn tĩnh Slug chuẩn SEO">
+                        <span class="slug-icon-tag"><i class="bi bi-link-45deg"></i></span>
+                        <code class="item-slug-code">/{{ item.slug }}</code>
+                      </div>
+                      <span class="item-date-sub">{{ (item.created_at || '2023-09-25') | date:'dd/MM/yyyy' }}</span>
+                    </td>
+
+                    <!-- Style Pill -->
+                    <td class="cell-style">
+                      <span class="style-pill" [ngClass]="getStyleBadgeClass(item.style)">
+                        {{ item.style }}
+                      </span>
+                    </td>
+
+                    <!-- Detail snippet -->
+                    <td class="cell-detail">
+                      <p class="snippet-text">{{ cleanHtmlSnippet(item.getDetail()) }}</p>
+                    </td>
+
+                    <!-- Action buttons (Xem, Sửa, Xóa) -->
+                    <td class="cell-actions">
+                      <div class="action-btn-group">
+                        <button
+                          type="button"
+                          class="action-btn btn-view"
+                          (click)="openDetail(item)"
+                          title="Xem chi tiết nội dung"
+                        >
+                          <i class="bi bi-eye"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="action-btn btn-edit"
+                          (click)="openEditForm(item)"
+                          title="Chỉnh sửa bài viết với WYSIWYG"
+                        >
+                          <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="action-btn btn-delete"
+                          (click)="confirmDelete(item)"
+                          title="Xóa bài viết"
+                        >
+                          <i class="bi bi-trash3-fill"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>
+
+<!-- MODAL: XEM CHI TIẾT BÀI VIẾT -->
+@if (showDetailModal && selectedFashionForDetail) {
+  <div class="modal-backdrop-custom" (click)="closeDetail()">
+    <div class="modal-box-large" (click)="$event.stopPropagation()">
+      <div class="modal-top-bar">
+        <div class="modal-title-wrap">
+          <span class="modal-badge">{{ selectedFashionForDetail.style }}</span>
+          <h5>{{ selectedFashionForDetail.getTitle() }}</h5>
+        </div>
+        <button type="button" class="btn-modal-close" (click)="closeDetail()">&times;</button>
+      </div>
+
+      <div class="modal-scroll-body">
+        <div class="modal-hero-photo mb-3">
+          <img
+            [src]="selectedFashionForDetail.getBase64String()"
+            [alt]="selectedFashionForDetail.getTitle()"
+            class="modal-cover-img"
+          />
+        </div>
+
+        <div class="modal-article-html" [innerHTML]="selectedFashionForDetail.getDetail() | safeHtml"></div>
+      </div>
+
+      <div class="modal-bottom-bar">
+        <button type="button" class="btn-modal-close-action" (click)="closeDetail()">Đóng</button>
+        <button
+          type="button"
+          class="btn-modal-edit-action"
+          (click)="closeDetail(); openEditForm(selectedFashionForDetail)"
+        >
+          <i class="bi bi-pencil-square me-1"></i> Chỉnh sửa bài này
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: XÁC NHẬN XÓA (YÊU CẦU ĐỀ BÀI) -->
+@if (showDeleteConfirmModal && fashionToDelete) {
+  <div class="modal-backdrop-custom" (click)="cancelDelete()">
+    <div class="modal-box-confirm" (click)="$event.stopPropagation()">
+      <div class="confirm-icon-box">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+
+      <h4 class="confirm-title">Xác Nhận Xóa Bài Viết</h4>
+      <p class="confirm-message">
+        Bạn có chắc chắn muốn xóa bài viết <strong>"{{ fashionToDelete.getTitle() }}"</strong> thuộc phong cách <em>{{ fashionToDelete.style }}</em>?
+      </p>
+      <p class="confirm-warning">Hành động này sẽ xóa dữ liệu vĩnh viễn khỏi MongoDB và không thể phục hồi.</p>
+
+      <div class="confirm-actions">
+        <button type="button" class="btn-confirm-cancel" (click)="cancelDelete()" [disabled]="isDeleting">
+          Hủy bỏ
+        </button>
+        <button type="button" class="btn-confirm-delete" (click)="executeDelete()" [disabled]="isDeleting">
+          <i class="bi bi-trash3-fill me-1"></i> {{ isDeleting ? 'Đang xóa...' : 'Xác Nhận Xóa' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,45 @@
+<p>catalog works!</p>
+<div class="catalog-container">
+  <!-- VÒNG LẶP NGOÀI: Duyệt qua từng danh mục (Category) -->
+  <table border="1" cellpadding="5" cellspacing="0" *ngFor="let c of catalogs" class="category-table">
+    <!-- Hàng 1: Tiêu đề thuộc tính Danh mục (chỉ hiển thị ở danh mục đầu tiên) -->
+    <tr *ngIf="c.Cateid === 'cate1'">
+      <th align="left" style="width: 250px;">Ma Danh Muc</th>
+      <th align="left" style="width: 250px;">Ten Danh Muc</th>
+    </tr>
+
+    <!-- Hàng 2: Giá trị của Danh mục hiện tại -->
+    <tr>
+      <td>{{ c.Cateid }}</td>
+      <td>{{ c.CateName }}</td>
+    </tr>
+
+    <!-- Hàng 3: Bảng con hiển thị danh sách sản phẩm thuộc danh mục này -->
+    <tr>
+      <td colspan="2" style="padding: 2px;">
+        <table border="1" cellpadding="6" cellspacing="0" width="100%" class="product-table">
+          <thead>
+            <tr>
+              <th align="left" style="width: 100px;">Ma San Pham</th>
+              <th align="left" style="width: 130px;">Ten San Pham</th>
+              <th align="left" style="width: 100px;">Gia San Pham</th>
+              <th align="left">Picture</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- VÒNG LẶP TRONG: Duyệt qua mảng Products của danh mục c -->
+            <tr *ngFor="let p of c.Products">
+              <td>{{ p.ProductId }}</td>
+              <td>{{ p.ProductName }}</td>
+              <td>{{ p.Price }}</td>
+              <td>
+                <!-- Property Binding cho thuộc tính src của hình ảnh -->
+                <img [src]="p.Image" width="55" height="55" [alt]="p.ProductName" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>

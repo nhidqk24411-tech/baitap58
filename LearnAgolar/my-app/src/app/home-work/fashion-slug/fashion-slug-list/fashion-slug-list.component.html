@@ -1,0 +1,281 @@
+<div class="fashion-slug-container">
+  <!-- Header / Hero Section with Glassmorphism -->
+  <header class="fashion-hero">
+    <div class="hero-top-row">
+      <div class="hero-badge">
+        <span class="badge-pulse"></span>
+        <span class="badge-text">MODULE FASHION SLUG & CỘT IdF (TỐI ƯU SEO)</span>
+      </div>
+      <a [routerLink]="['/fashion-list']" class="btn-switch-magazine">
+        📖 Xem Giao Diện Tạp Chí (Bài 58) →
+      </a>
+    </div>
+
+    <h1 class="hero-title">Bộ Sưu Tập Thời Trang Đương Đại</h1>
+    <p class="hero-subtitle">
+      Khám phá các thiết kế thời trang đỉnh cao với <strong>Cột IdF duy nhất</strong> và đường dẫn <strong>Slug chuẩn SEO</strong> tự động tạo từ tiêu đề không dấu.
+    </p>
+
+    <!-- Toolbar: Search & Style Filter Pills -->
+    <div class="hero-toolbar">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          placeholder="Tìm theo tiêu đề, số IdF (#1, #2), hoặc phong cách..."
+          [value]="searchTerm()"
+          (input)="onSearchChange($event)"
+          class="search-input"
+        />
+        @if (searchTerm()) {
+          <button class="clear-search-btn" (click)="searchTerm.set('')" title="Xóa tìm kiếm">✕</button>
+        }
+      </div>
+
+      <!-- Filter Pills with Glow -->
+      <div class="style-pills">
+        @for (st of availableStyles(); track st) {
+          <button
+            type="button"
+            class="pill-btn"
+            [class.active]="selectedStyle() === st"
+            (click)="setFilterStyle(st)"
+          >
+            <span class="pill-dot"></span>
+            {{ st === 'ALL' ? 'Tất Cả Phong Cách' : st }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Status Bar & View Mode Switcher -->
+    <div class="status-summary">
+      <div class="count-pill">
+        <span class="count-dot"></span>
+        <span>Đang hiển thị <strong>{{ filteredFashions().length }}</strong> / {{ fashions().length }} sản phẩm thời trang</span>
+      </div>
+
+      <!-- Segmented View Mode Controls -->
+      <div class="view-mode-group">
+        <button
+          type="button"
+          class="mode-btn"
+          [class.active]="viewMode() === 'grid'"
+          (click)="setViewMode('grid')"
+          title="Chế độ Card Lưới"
+        >
+          <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
+          <span>Dạng Lưới (Card)</span>
+        </button>
+
+        <button
+          type="button"
+          class="mode-btn"
+          [class.active]="viewMode() === 'table'"
+          (click)="setViewMode('table')"
+          title="Chế độ Bảng Dữ Liệu có Cột IdF"
+        >
+          <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <span>Dạng Bảng (Cột IdF)</span>
+        </button>
+      </div>
+
+      @if (searchTerm() || selectedStyle() !== 'ALL') {
+        <button class="reset-link" (click)="clearFilters()">
+          ↺ Đặt lại bộ lọc
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- Error Alert -->
+  @if (errMessage()) {
+    <div class="error-banner">
+      <div class="error-content">
+        <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>{{ errMessage() }}</span>
+      </div>
+      <button class="retry-btn" (click)="loadFashionList()">Thử lại</button>
+    </div>
+  }
+
+  <!-- Loading State Skeleton -->
+  @if (isLoading()) {
+    <div class="card-grid">
+      @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+        <div class="skeleton-card">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-body">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line title"></div>
+            <div class="skeleton-line text"></div>
+            <div class="skeleton-line button"></div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- VIEW 1: Main Card Grid Layout -->
+  @if (!isLoading() && filteredFashions().length > 0 && viewMode() === 'grid') {
+    <div class="card-grid">
+      @for (fashion of filteredFashions(); track fashion._id || fashion.IdF) {
+        <article class="fashion-card">
+          <!-- Card Image Container with Badges -->
+          <div class="card-media">
+            <img
+              [src]="fashion.getBase64String()"
+              [alt]="fashion.fashion_subject"
+              loading="lazy"
+              class="card-img"
+            />
+            <div class="media-overlay"></div>
+
+            <!-- Cột / Badge IdF số nguyên duy nhất -->
+            <div class="idf-badge" title="Mã số nhận diện duy nhất Cột IdF">
+              <span class="idf-label">Cột IdF:</span>
+              <span class="idf-number">#{{ fashion.IdF }}</span>
+            </div>
+
+            <!-- Style Floating Tag -->
+            <span class="style-badge">
+              {{ fashion.style || 'FASHION' }}
+            </span>
+          </div>
+
+          <!-- Card Content Body -->
+          <div class="card-body">
+            <!-- SEO Slug Chip (kết hợp tiêu đề và IdF) -->
+            <div class="slug-meta" title="Đường dẫn tĩnh SEO tự động phân tích theo IdF">
+              <span class="slug-icon">🔗</span>
+              <span class="slug-text">/{{ fashion.slug }}</span>
+            </div>
+
+            <!-- Fashion Title -->
+            <h2 class="card-title" [title]="fashion.fashion_subject">
+              {{ fashion.fashion_subject }}
+            </h2>
+
+            <!-- Excerpt / Detail snippet -->
+            <p class="card-description">
+              {{ stripHtml(fashion.fashion_detail) || 'Mẫu thiết kế thời trang đương đại nổi bật trong bộ sưu tập mới...' }}
+            </p>
+
+            <!-- Card Action Footer -->
+            <div class="card-footer">
+              <a
+                [routerLink]="['/fashion-slug-detail', fashion.slug]"
+                class="view-detail-btn"
+                [attr.aria-label]="'Xem chi tiết mẫu ' + fashion.fashion_subject"
+              >
+                <span>Xem Chi Tiết Bằng Slug</span>
+                <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  <!-- VIEW 2: Data Table Layout có hiển thị rõ CỘT IdF -->
+  @if (!isLoading() && filteredFashions().length > 0 && viewMode() === 'table') {
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="fashion-table">
+          <thead>
+            <tr>
+              <th class="col-idf">CỘT IdF (Duy nhất)</th>
+              <th class="col-img">HÌNH ẢNH</th>
+              <th class="col-title">TIÊU ĐỀ THỜI TRANG</th>
+              <th class="col-style">PHONG CÁCH</th>
+              <th class="col-slug">SLUG TỰ TẠO (KÈM IdF)</th>
+              <th class="col-action">THAO TÁC</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fashion of filteredFashions(); track fashion._id || fashion.IdF) {
+              <tr class="table-row">
+                <!-- Cột IdF số nguyên duy nhất -->
+                <td class="col-idf">
+                  <span class="table-idf-badge">
+                    <span class="hash">#</span>{{ fashion.IdF }}
+                  </span>
+                </td>
+
+                <!-- Cột hình ảnh thu nhỏ -->
+                <td class="col-img">
+                  <div class="table-img-wrap">
+                    <img
+                      [src]="fashion.getBase64String()"
+                      [alt]="fashion.fashion_subject"
+                      loading="lazy"
+                      class="table-thumb"
+                    />
+                  </div>
+                </td>
+
+                <!-- Cột tiêu đề -->
+                <td class="col-title">
+                  <div class="table-title-text">{{ fashion.fashion_subject }}</div>
+                  <div class="table-snippet">{{ stripHtml(fashion.fashion_detail) | slice:0:80 }}...</div>
+                </td>
+
+                <!-- Cột Style -->
+                <td class="col-style">
+                  <span class="table-style-pill">{{ fashion.style || 'FASHION' }}</span>
+                </td>
+
+                <!-- Cột Slug SEO kèm IdF -->
+                <td class="col-slug">
+                  <code class="slug-code" title="Slug thân thiện SEO">/{{ fashion.slug }}</code>
+                </td>
+
+                <!-- Cột thao tác điều hướng -->
+                <td class="col-action">
+                  <a
+                    [routerLink]="['/fashion-slug-detail', fashion.slug]"
+                    class="table-action-btn"
+                  >
+                    Xem Chi Tiết →
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading() && filteredFashions().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon-wrap">🔍</div>
+      <h3 class="empty-title">Không tìm thấy mẫu thời trang nào</h3>
+      <p class="empty-desc">Không có kết quả phù hợp với từ khóa hoặc bộ lọc phong cách đang chọn.</p>
+      <button class="empty-reset-btn" (click)="clearFilters()">
+        Xem Toàn Bộ {{ fashions().length }} Mẫu Thời Trang
+      </button>
+    </div>
+  }
+</div>

@@ -1,0 +1,185 @@
+<div class="detail-page-container">
+  <!-- Top Navigation & Breadcrumbs -->
+  <nav class="detail-nav">
+    <button class="back-link-btn" (click)="goBack()" title="Quay lại danh sách">
+      <svg class="back-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      <span>Quay lại danh sách</span>
+    </button>
+
+    <div class="breadcrumbs">
+      <a [routerLink]="['/fashion-slug-list']" class="crumb-link">Danh sách thời trang</a>
+      <span class="crumb-separator">/</span>
+      <span class="crumb-current">{{ fashion()?.fashion_subject || currentSlug() }}</span>
+    </div>
+
+    <a [routerLink]="['/fashion-list']" class="magazine-shortcut-link">
+      <span>Giao diện Tạp Chí (Bài 58)</span> →
+    </a>
+  </nav>
+
+  <!-- Error Alert -->
+  @if (errMessage()) {
+    <div class="error-card">
+      <div class="error-icon-box">⚠️</div>
+      <div class="error-body">
+        <h3 class="error-title">Không tìm thấy thông tin thời trang</h3>
+        <p class="error-text">{{ errMessage() }}</p>
+        <div class="error-actions">
+          <button class="btn-primary" (click)="loadDetail(currentSlug())">Thử Lại</button>
+          <button class="btn-secondary" (click)="goBack()">Trở Về Danh Sách</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Loading State Skeleton -->
+  @if (isLoading()) {
+    <div class="detail-card skeleton-card">
+      <div class="detail-layout">
+        <div class="skeleton-image-box"></div>
+        <div class="skeleton-info-box">
+          <div class="skeleton-pill"></div>
+          <div class="skeleton-title"></div>
+          <div class="skeleton-meta"></div>
+          <div class="skeleton-desc"></div>
+          <div class="skeleton-desc"></div>
+          <div class="skeleton-btn"></div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Detail Content Card -->
+  @if (!isLoading() && fashion(); as item) {
+    <article class="detail-card">
+      <div class="detail-layout">
+        <!-- Left Column: Visual Media Showcase -->
+        <div class="media-column">
+          <div class="image-wrapper">
+            <img
+              [src]="item.getBase64String()"
+              [alt]="item.fashion_subject"
+              class="showcase-img"
+            />
+            <div class="image-gradient-shadow"></div>
+
+            <!-- IdF Floating Badge -->
+            <div class="media-idf-badge" title="Mã định danh duy nhất Cột IdF">
+              <span class="badge-idf-label">Cột IdF:</span>
+              <span class="badge-idf-value">#{{ item.IdF }}</span>
+            </div>
+
+            <!-- Style Floating Tag -->
+            <div class="media-style-tag">
+              {{ item.style || 'FASHION' }}
+            </div>
+          </div>
+
+          <div class="media-caption">
+            <span class="caption-dot"></span>
+            <span>Mã định danh hệ thống: <code>{{ item._id || 'Auto-generated' }}</code></span>
+          </div>
+        </div>
+
+        <!-- Right Column: Information & Metadata -->
+        <div class="info-column">
+          <!-- Style & Status Indicators -->
+          <div class="meta-tags">
+            <span class="tag-style">{{ item.style || 'STREET STYLE' }}</span>
+            <span class="tag-status">
+              <span class="status-indicator"></span> Đang Trưng Bày
+            </span>
+          </div>
+
+          <!-- Main Subject Title -->
+          <h1 class="item-title">{{ item.fashion_subject }}</h1>
+
+          <!-- SEO Slug Showcase & Hệ Thống Tự Động Phân Tích (Yêu cầu đề bài) -->
+          <div class="seo-slug-box">
+            <div class="slug-header">
+              <div class="slug-title-wrap">
+                <span class="slug-tag">HỆ THỐNG TỰ ĐỘNG PHÂN TÍCH SLUG & IdF</span>
+                <span class="slug-url">/fashion-slug-detail/<strong>{{ currentSlug() }}</strong></span>
+              </div>
+              <button
+                type="button"
+                class="copy-btn"
+                [class.copied]="isCopied()"
+                (click)="copySlugLink()"
+                title="Sao chép liên kết thân thiện SEO"
+              >
+                @if (isCopied()) {
+                  <span>✓ Đã sao chép</span>
+                } @else {
+                  <span>📋 Sao chép link</span>
+                }
+              </button>
+            </div>
+
+            <!-- Khung phân tích kỹ thuật giải mã Slug & IdF -->
+            <div class="slug-breakdown">
+              <div class="breakdown-grid">
+                <div class="breakdown-col">
+                  <span class="breakdown-label">1. Giá trị Cột IdF kiểu số bóc tách:</span>
+                  <div class="breakdown-value idf-value">
+                    <span class="val-badge">IdF: #{{ parsedSlugInfo().idf !== null ? parsedSlugInfo().idf : item.IdF }}</span>
+                    <span class="val-note">(Số nguyên duy nhất)</span>
+                  </div>
+                </div>
+
+                <div class="breakdown-col">
+                  <span class="breakdown-label">2. Tiêu đề chuẩn hóa không dấu:</span>
+                  <div class="breakdown-value">
+                    <code>{{ parsedSlugInfo().baseSlug || item.slug }}</code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="breakdown-footer">
+                <span class="formula-icon">⚡</span>
+                <span class="formula-text">
+                  Quy tắc sinh Slug: <code>toSlug(fashion_subject) + "-{{ item.IdF }}"</code>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fashion Detail Content (WYSIWYG Editorial Format) -->
+          <div class="detail-content-wrap">
+            <h3 class="section-heading">
+              <span class="heading-line"></span>
+              <span>NỘI DUNG CHI TIẾT (WYSIWYG HTML EDITOR)</span>
+            </h3>
+            
+            <div
+              class="editorial-prose"
+              [innerHTML]="item.fashion_detail || '<p><em>Chưa có nội dung mô tả chi tiết cho sản phẩm này.</em></p>'"
+            ></div>
+          </div>
+
+          <!-- Action Buttons Bar -->
+          <div class="detail-actions">
+            <button class="btn-back-list" (click)="goBack()">
+              <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Về Danh Sách Slug</span>
+            </button>
+
+            <a [routerLink]="['/fashion-list']" class="btn-view-mag">
+              <span>Xem Tại Trang Tạp Chí</span>
+              <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </article>
+  }
+</div>

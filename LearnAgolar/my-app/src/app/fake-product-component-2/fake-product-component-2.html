@@ -1,0 +1,45 @@
+<p>fake-product works!</p>
+<p>{{ errMessage() }}</p>
+
+<h3 class="text-center text-white bg-dark p-3">Product List</h3>
+
+<div class="container">
+  <div class="row">
+    @for (p of products(); track p.id) {
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="img-container">
+            <div class="percent">-25%</div>
+            <div class="wishlist">
+              <i class="bi bi-heart-fill"></i>
+            </div>
+            <div class="text-center">
+              <img [src]="p.image" class="img-scale" alt="{{ p.title }}" />
+            </div>
+          </div>
+
+          <div class="product-detail-container">
+            <h6 class="mb-0 text-truncate">{{ p.title }}</h6>
+
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <span class="text-danger fw-bold">${{ p.price }}</span>
+            </div>
+
+            <div class="ratings mt-2">
+              <i class="bi bi-star-fill me-1"></i>
+              <span>{{ p.rating.rate }}</span>
+            </div>
+
+            <div class="count">Count: {{ p.rating.count }}</div>
+
+            <button class="btn btn-warning d-block w-100 mt-3 text-white fw-bold">Buy Now</button>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="col-12">
+        <p>No products available.</p>
+      </div>
+    }
+  </div>
+</div>

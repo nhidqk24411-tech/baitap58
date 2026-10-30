@@ -1,0 +1,24 @@
+.catalog-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.category-table {
+  border-collapse: collapse;
+  margin-bottom: 5px;
+  width: 500px;
+}
+
+.product-table {
+  border-collapse: collapse;
+  margin-top: 2px;
+}
+
+th, td {
+  border: 1px solid #777;
+}
+
+img {
+  display: block;
+  object-fit: contain;
+}

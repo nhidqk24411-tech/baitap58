@@ -1,0 +1,28 @@
+<p>{{errMessage()}}</p>
+Fashion Id: <input type="text" #fashionId> 
+<button (click)="searchFashion(fashionId.value)">Search</button>
+<table>
+  @if (fashion()!=null){
+    <tr>
+        <td>Fashion Id:</td>
+        <td>{{fashion()?._id}}</td>
+    </tr>
+    <tr>
+        <td>Fashion Subject:</td>
+        <td>{{fashion()?.fashion_subject}}</td>
+    </tr>
+    <tr>
+        <td>Fashion Detail:</td>
+        <td>{{fashion()?.fashion_detail}} </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <img src="{{fashion()?.getBase64String()}}">
+        </td>
+    </tr>
+  }@else {
+    <tr><td>Not found Fashion</td></tr>
+  }
+</table>
+
+

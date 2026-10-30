@@ -1,0 +1,36 @@
+<p>product-list-component works!</p>
+<table border = "1">
+    <thead>
+        <tr>
+            <td>ID</td>
+            <td>Name</td>
+            <td>Price</td>
+        </tr>
+    </thead>
+    <tbody>
+        @for (p of products; track $index) {
+            <!-- @if : thêm vài sản phẩm và nhập giá âm, dùng if để sản phẩm nào cso giá <0 thì hiển thị tô đỏ -->
+            @if (p.price < 0) {
+                <tr class="negative-price">
+                    <td>{{p.id}}</td>
+                    <td>{{p.name}}</td>
+                    <td>{{p.price}}</td>
+                    <td><img [src] = "p.image" [alt] = "p.name" width = "100" height = "100"></td>
+
+                </tr>
+            } @else {
+                <tr>
+                    <td>{{p.id}}</td>
+                    <td>{{p.name}}</td>
+                    <td>{{p.price}}</td>
+                    <td><img [src] = "p.image" [alt] = "p.name" width = "100" height = "100"></td>
+                </tr>
+            }
+        }
+        @empty {
+            <tr>
+                <td colspan = "4">No product available</td>
+            </tr>
+        }
+    </tbody>
+</table>

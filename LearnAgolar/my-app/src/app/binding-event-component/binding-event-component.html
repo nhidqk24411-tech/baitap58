@@ -1,0 +1,34 @@
+<p>binding-event-component works!</p>
+<table>
+    <tr>
+        <td colspan="2"> Phuong trinh Bac 1</td>
+    </tr>
+    <tr>
+        <td>He so a:</td>
+        <td>
+            <input type="number" [value]="hsa" #view_hsa>
+        </td>
+    </tr>
+    <tr>
+        <td>He so b:</td>
+        <td>
+            <input type="number" [value]="hsb" #view_hsb />
+        </td>
+    </tr>
+    <tr>
+        <td>Ket qua:</td>
+        <td id="tdketqua" #view>
+        </td>
+    </tr>
+    <tr>
+        <td>Ket qua2:</td>
+        <td id="tdketqua2">
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <button (click)="giaiPt(view_hsa.value,view_hsb.value,view)">Giai</button>
+            <button>PT moi</button>
+        </td>
+    </tr>
+</table>

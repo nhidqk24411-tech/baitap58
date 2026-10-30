@@ -1,0 +1,362 @@
+<div class="wysiwyg-container">
+  <!-- Top Bar with Editor Mode & Preview Tabs -->
+  <div class="editor-header-bar">
+    <div class="editor-title-group">
+      <span class="editor-badge">
+        <i class="bi bi-pencil-square"></i> WYSIWYG HTML Editor
+      </span>
+      <span class="editor-subtext">Hỗ trợ đầy đủ định dạng văn bản, ảnh, liên kết và bảng</span>
+    </div>
+
+    <div class="tab-group">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === 'edit' && !isSourceMode"
+        (click)="setTab('edit'); isSourceMode = false"
+        title="Chế độ soạn thảo trực quan WYSIWYG"
+      >
+        <i class="bi bi-eye"></i> Soạn thảo trực quan
+      </button>
+
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === 'preview'"
+        (click)="setTab('preview')"
+        title="Xem trước định dạng hiển thị thực tế"
+      >
+        <i class="bi bi-layout-text-window-reverse"></i> Xem trước (Preview)
+      </button>
+
+      <button
+        type="button"
+        class="tab-btn source-btn"
+        [class.active]="isSourceMode"
+        (click)="toggleSourceMode()"
+        title="Xem và chỉnh sửa trực tiếp mã nguồn HTML"
+      >
+        <i class="bi bi-code-slash"></i> Mã nguồn HTML
+      </button>
+    </div>
+  </div>
+
+  <!-- CKEditor-style Multi-tier Toolbar (shown in Edit mode) -->
+  @if (activeTab === 'edit' && !isSourceMode) {
+    <div class="wysiwyg-toolbar">
+      <!-- Toolbar Row 1: Document & Basic Inline Styles -->
+      <div class="toolbar-row">
+        <!-- History Group -->
+        <div class="btn-group-custom" title="Lịch sử thao tác">
+          <button type="button" class="tool-btn" (click)="execCommand('undo')" title="Hoàn tác (Undo) Ctrl+Z">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('redo')" title="Làm lại (Redo) Ctrl+Y">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Inline Text Styles Group -->
+        <div class="btn-group-custom" title="Định dạng phông chữ">
+          <button type="button" class="tool-btn fw-bold" (click)="execCommand('bold')" title="In đậm (Bold) Ctrl+B">
+            <i class="bi bi-type-bold"></i>
+          </button>
+          <button type="button" class="tool-btn fst-italic" (click)="execCommand('italic')" title="In nghiêng (Italic) Ctrl+I">
+            <i class="bi bi-type-italic"></i>
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('underline')" title="Gạch chân (Underline) Ctrl+U">
+            <i class="bi bi-type-underline"></i>
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('strikeThrough')" title="Gạch ngang (Strikethrough)">
+            <i class="bi bi-type-strikethrough"></i>
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('subscript')" title="Chỉ số dưới (Subscript)">
+            <span class="sub-super">X<sub>2</sub></span>
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('superscript')" title="Chỉ số trên (Superscript)">
+            <span class="sub-super">X<sup>2</sup></span>
+          </button>
+          <button type="button" class="tool-btn text-danger" (click)="execCommand('removeFormat')" title="Xóa định dạng (Remove Format)">
+            <i class="bi bi-eraser-fill"></i>
+          </button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Headings / Block Dropdown -->
+        <div class="select-wrapper" title="Định dạng đoạn văn bản">
+          <select class="tool-select" [(ngModel)]="selectedFormat" (change)="formatBlock(selectedFormat)">
+            <option value="p">Đoạn văn (Normal P)</option>
+            <option value="h1">Tiêu đề lớn (Heading 1)</option>
+            <option value="h2">Tiêu đề vừa (Heading 2)</option>
+            <option value="h3">Tiêu đề nhỏ (Heading 3)</option>
+            <option value="h4">Tiêu đề phụ (Heading 4)</option>
+            <option value="blockquote">Trích dẫn (Blockquote)</option>
+            <option value="pre">Mã code (Preformatted)</option>
+          </select>
+        </div>
+
+        <!-- Font Family Dropdown -->
+        <div class="select-wrapper" title="Kiểu chữ (Font Family)">
+          <select class="tool-select" [(ngModel)]="selectedFont" (change)="applyFont(selectedFont)">
+            <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
+            <option value="'Playfair Display', serif">Playfair Display (Luxury)</option>
+            <option value="'Outfit', sans-serif">Outfit (Editorial)</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="'Times New Roman', serif">Times New Roman</option>
+            <option value="'Courier New', monospace">Courier New</option>
+            <option value="Arial, sans-serif">Arial</option>
+          </select>
+        </div>
+
+        <!-- Font Size Dropdown -->
+        <div class="select-wrapper" title="Cỡ chữ (Font Size)">
+          <select class="tool-select font-size-select" [(ngModel)]="selectedSize" (change)="applySize(selectedSize)">
+            <option value="12px">12px</option>
+            <option value="14px">14px</option>
+            <option value="16px">16px (Chuẩn)</option>
+            <option value="18px">18px</option>
+            <option value="20px">20px</option>
+            <option value="24px">24px</option>
+            <option value="28px">28px</option>
+            <option value="32px">32px</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Toolbar Row 2: Alignment, Lists, Colors, Inserts -->
+      <div class="toolbar-row">
+        <!-- Text Color -->
+        <div class="color-picker-group" title="Màu chữ">
+          <label class="color-label" for="txtColorPicker">
+            <i class="bi bi-palette-fill"></i>
+            <span class="color-indicator" [style.backgroundColor]="textColor"></span>
+          </label>
+          <input
+            id="txtColorPicker"
+            type="color"
+            class="hidden-color-input"
+            [(ngModel)]="textColor"
+            (change)="applyTextColor(textColor)"
+          />
+        </div>
+
+        <!-- Background / Highlight Color -->
+        <div class="color-picker-group" title="Màu nền đánh dấu (Highlight)">
+          <label class="color-label" for="bgColorPicker">
+            <i class="bi bi-highlighter"></i>
+            <span class="color-indicator" [style.backgroundColor]="bgColor"></span>
+          </label>
+          <input
+            id="bgColorPicker"
+            type="color"
+            class="hidden-color-input"
+            [(ngModel)]="bgColor"
+            (change)="applyBgColor(bgColor)"
+          />
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Alignment Group -->
+        <div class="btn-group-custom" title="Căn lề">
+          <button type="button" class="tool-btn" (click)="execCommand('justifyLeft')" title="Căn trái">
+            <i class="bi bi-text-left"></i>
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('justifyCenter')" title="Căn giữa">
+            <i class="bi bi-text-center"></i>
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('justifyRight')" title="Căn phải">
+            <i class="bi bi-text-right"></i>
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('justifyFull')" title="Căn đều hai bên">
+            <i class="bi bi-justify"></i>
+          </button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Lists & Indentation -->
+        <div class="btn-group-custom" title="Danh sách & Thụt lề">
+          <button type="button" class="tool-btn" (click)="execCommand('insertUnorderedList')" title="Danh sách dấu chấm">
+            <i class="bi bi-list-ul"></i>
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('insertOrderedList')" title="Danh sách đánh số">
+            <i class="bi bi-list-ol"></i>
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('outdent')" title="Giảm thụt lề">
+            <i class="bi bi-text-indent-right"></i>
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('indent')" title="Tăng thụt lề">
+            <i class="bi bi-text-indent-left"></i>
+          </button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Inserts Group: Link, Image, Table, Horizontal Rule -->
+        <div class="btn-group-custom" title="Chèn đối tượng">
+          <button type="button" class="tool-btn insert-btn" (click)="openLinkDialog()" title="Chèn liên kết">
+            <i class="bi bi-link-45deg"></i> Link
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('unlink')" title="Bỏ liên kết">
+            <i class="bi bi-link"></i>
+          </button>
+          <button type="button" class="tool-btn insert-btn" (click)="openImageDialog()" title="Chèn ảnh vào nội dung">
+            <i class="bi bi-image"></i> Ảnh
+          </button>
+          <button type="button" class="tool-btn insert-btn" (click)="openTableDialog()" title="Chèn bảng">
+            <i class="bi bi-table"></i> Bảng
+          </button>
+          <button type="button" class="tool-btn" (click)="execCommand('insertHorizontalRule')" title="Đường kẻ ngang phân cách">
+            <i class="bi bi-dash-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Editor Content Area -->
+  <div class="editor-body">
+    <!-- Visual Editable Area -->
+    <div
+      #editorArea
+      class="editor-content visual-editor"
+      contenteditable="true"
+      [style.display]="activeTab === 'edit' && !isSourceMode ? 'block' : 'none'"
+      (input)="onContentInput()"
+      (blur)="onContentInput()"
+      [attr.data-placeholder]="placeholder"
+    ></div>
+
+    <!-- Raw HTML Code Editor Mode -->
+    @if (isSourceMode) {
+      <div class="source-editor-wrapper">
+        <div class="source-notice">
+          <i class="bi bi-code"></i> Chế độ chỉnh sửa trực tiếp mã HTML (Source Code). Thay đổi sẽ được lưu ngay vào nội dung.
+        </div>
+        <textarea
+          class="source-textarea"
+          [(ngModel)]="rawHtml"
+          (input)="onRawHtmlChange()"
+          rows="16"
+          placeholder="<h1>Tiêu đề</h1><p>Nội dung chi tiết...</p>"
+        ></textarea>
+      </div>
+    }
+
+    <!-- Live Preview Mode -->
+    @if (activeTab === 'preview') {
+      <div class="preview-wrapper">
+        <div class="preview-header">
+          <i class="bi bi-file-earmark-richtext"></i> Giao diện hiển thị bài viết trên trang độc giả (Client Preview)
+        </div>
+        <div class="preview-content-box" [innerHTML]="value || '<p class=\'text-muted fst-italic\'>Chưa có nội dung để hiển thị.</p>'"></div>
+      </div>
+    }
+  </div>
+
+  <!-- Status Bar at Bottom -->
+  <div class="editor-status-bar">
+    <div class="status-left">
+      <span class="status-badge" [class.badge-source]="isSourceMode" [class.badge-preview]="activeTab === 'preview'">
+        {{ isSourceMode ? 'MÃ NGUỒN HTML' : (activeTab === 'preview' ? 'XEM TRƯỚC' : 'SOẠN THẢO WYSIWYG') }}
+      </span>
+      <span class="status-tip">
+        <i class="bi bi-info-circle"></i> Sử dụng thanh công cụ để định dạng bài viết chuyên nghiệp như tạp chí Vogue
+      </span>
+    </div>
+
+    <div class="status-right">
+      <span class="count-item">Số từ: <strong>{{ wordCount }}</strong></span>
+      <span class="count-item">Ký tự: <strong>{{ charCount }}</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Chèn Link -->
+@if (showLinkModal) {
+  <div class="wysiwyg-modal-backdrop" (click)="showLinkModal = false">
+    <div class="wysiwyg-modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <h6><i class="bi bi-link-45deg me-1"></i> Chèn liên kết (Hyperlink)</h6>
+        <button type="button" class="btn-close-custom" (click)="showLinkModal = false">&times;</button>
+      </div>
+      <div class="modal-body-custom">
+        <div class="form-group mb-3">
+          <label class="form-label">Văn bản hiển thị (Anchor Text):</label>
+          <input type="text" class="form-input" [(ngModel)]="linkText" placeholder="Ví dụ: Xem bộ sưu tập tại đây" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Địa chỉ URL:</label>
+          <input type="text" class="form-input" [(ngModel)]="linkUrl" placeholder="https://example.com" />
+        </div>
+      </div>
+      <div class="modal-footer-custom">
+        <button type="button" class="btn-modal-cancel" (click)="showLinkModal = false">Hủy</button>
+        <button type="button" class="btn-modal-save" (click)="insertLink()">Chèn Link</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Chèn Ảnh -->
+@if (showImageModal) {
+  <div class="wysiwyg-modal-backdrop" (click)="showImageModal = false">
+    <div class="wysiwyg-modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <h6><i class="bi bi-image me-1"></i> Chèn hình ảnh vào nội dung</h6>
+        <button type="button" class="btn-close-custom" (click)="showImageModal = false">&times;</button>
+      </div>
+      <div class="modal-body-custom">
+        <div class="form-group mb-3">
+          <label class="form-label fw-bold">Cách 1: Tải ảnh từ máy tính (Tự động chuyển Base64):</label>
+          <input type="file" class="form-input file-input" accept="image/*" (change)="onImageFileSelected($event)" />
+        </div>
+        <div class="divider-text mb-3"><span>HOẶC</span></div>
+        <div class="form-group mb-3">
+          <label class="form-label">Cách 2: Nhập đường dẫn ảnh trực tuyến (URL):</label>
+          <input type="text" class="form-input" [(ngModel)]="imageUrl" placeholder="https://images.unsplash.com/..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chú thích ảnh (Caption / Alt Text):</label>
+          <input type="text" class="form-input" [(ngModel)]="imageAlt" placeholder="Ví dụ: Người mẫu tại Tuần lễ Thời trang Paris 2023" />
+        </div>
+      </div>
+      <div class="modal-footer-custom">
+        <button type="button" class="btn-modal-cancel" (click)="showImageModal = false">Hủy</button>
+        <button type="button" class="btn-modal-save" (click)="insertImageUrl()">Chèn Ảnh</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Chèn Bảng -->
+@if (showTableModal) {
+  <div class="wysiwyg-modal-backdrop" (click)="showTableModal = false">
+    <div class="wysiwyg-modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <h6><i class="bi bi-table me-1"></i> Tạo bảng dữ liệu mới</h6>
+        <button type="button" class="btn-close-custom" (click)="showTableModal = false">&times;</button>
+      </div>
+      <div class="modal-body-custom">
+        <div class="row-fields">
+          <div class="field-item">
+            <label class="form-label">Số hàng (Rows):</label>
+            <input type="number" min="1" max="20" class="form-input" [(ngModel)]="tableRows" />
+          </div>
+          <div class="field-item">
+            <label class="form-label">Số cột (Columns):</label>
+            <input type="number" min="1" max="10" class="form-input" [(ngModel)]="tableCols" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer-custom">
+        <button type="button" class="btn-modal-cancel" (click)="showTableModal = false">Hủy</button>
+        <button type="button" class="btn-modal-save" (click)="insertTable()">Tạo Bảng</button>
+      </div>
+    </div>
+  </div>
+}
